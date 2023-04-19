@@ -31,6 +31,11 @@ public class MainCard : MonoBehaviour
         cardBack.SetActive(true);
     }
 
+    public bool Revealed()
+    {
+        return !cardBack.activeSelf;
+    }
+
     public void ChangeSprite(int id, Sprite image)
     {
         _id = id;

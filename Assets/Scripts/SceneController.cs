@@ -9,19 +9,26 @@ public class SceneController : MonoBehaviour
 
     public const int gridRows = 4;
     public const int gridCols = 5;
-    public const float offsetX = 3f;
-    public const float offsetY = 3f;
+    public float offsetX = 3f;
+    public float offsetY = 3f;
 
     [SerializeField] private MainCard originalCard;
     [SerializeField] private Sprite[] images;
     [SerializeField] private TextMesh scoreLabel;
     [SerializeField] private TextMesh movesLabel;
+    [SerializeField] private TextMesh timerLabel;
     [SerializeField] private int[] cardNumbers;
 
     private int _score = 0;
     private int _moves = 0;
     private MainCard _firstRevealedCard;
     private MainCard _secondRevealedCard;
+    private MainCard[] _allCards = {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null};
+
+    private float _startTime;
+    private float _elapsedTime;
+
+    private bool _finished = false;
 
     public bool canReveal
     {
@@ -35,6 +42,22 @@ public class SceneController : MonoBehaviour
     void Start()
     {
         SetCardLayout();
+        _startTime = Time.time;
+    }
+
+    void Update()
+    {
+        if (!_finished) 
+        {
+            _elapsedTime = Time.time - _startTime;
+
+            int hours = Mathf.FloorToInt(_elapsedTime / 3600f);
+            int minutes = Mathf.FloorToInt((_elapsedTime - hours * 3600f) / 60f);
+            int seconds = Mathf.FloorToInt(_elapsedTime - hours * 3600f - minutes * 60f);
+            
+            // update timer display
+            timerLabel.text = string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
+        }
     }
 
     private void SetCardLayout()
@@ -67,6 +90,8 @@ public class SceneController : MonoBehaviour
                 float yPos = startPosition.y + (j * offsetY);
 
                 card.transform.position = new Vector3(xPos, yPos, startPosition.z);
+
+                _allCards[index] = card;
             }
         }
     }
@@ -122,6 +147,21 @@ public class SceneController : MonoBehaviour
         }
         _moves++;
         movesLabel.text = "Moves: " + _moves;
+
+        _finished = CheckIfFinished();
+    }
+
+    public bool CheckIfFinished()
+    {
+        for (int i = 0; i < _allCards.Length; i++)
+        {
+            if (!_allCards[i].Revealed())
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void Restart()
