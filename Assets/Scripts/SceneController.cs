@@ -6,18 +6,29 @@ using UnityEngine.SceneManagement;
 
 public class SceneController : MonoBehaviour
 {
-
     public const int gridRows = 4;
     public const int gridCols = 5;
+    [Header("Layout")]
     public float offsetX = 3f;
     public float offsetY = 3f;
 
+    [Header("Audio Clips")]
+    public AudioClip welcomeClip;
+    public AudioClip exitClip;
+    public AudioClip resetClip;
+    public AudioClip finishedClip;
+    public AudioClip bingoClip;
+    public AudioClip failClip;
+
+    [Header("Cards")]
     [SerializeField] private MainCard originalCard;
     [SerializeField] private Sprite[] images;
+    [SerializeField] private int[] cardNumbers;
+
+    [Header("Labels")]
     [SerializeField] private TextMesh scoreLabel;
     [SerializeField] private TextMesh movesLabel;
     [SerializeField] private TextMesh timerLabel;
-    [SerializeField] private int[] cardNumbers;
 
     private int _score = 0;
     private int _moves = 0;
@@ -30,6 +41,8 @@ public class SceneController : MonoBehaviour
 
     private bool _finished = false;
 
+    private static bool hasPlayedWelcomeSound = false;
+
     public bool canReveal
     {
         get
@@ -38,11 +51,18 @@ public class SceneController : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        if (!hasPlayedWelcomeSound)
+            StartCoroutine(WaitAndPlayWelcomeSoundCoroutine());
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         SetCardLayout();
         _startTime = Time.time;
+        
     }
 
     void Update()
@@ -128,8 +148,9 @@ public class SceneController : MonoBehaviour
 
     private IEnumerator CheckCardMatchCoroutine()
     {
-        if (_firstRevealedCard.Id == _secondRevealedCard.Id)
+        if (_firstRevealedCard.Id == _secondRevealedCard.Id) // pogodjene iste karte
         {
+            PlaySound(bingoClip);
             _score++;
             scoreLabel.text = "Score: " + _score;
             // _firstRevealedCard.SetActive(false); // za ovo ti treba referenca i za sliku karte ne samo za poledjinu
@@ -138,16 +159,19 @@ public class SceneController : MonoBehaviour
             _secondRevealedCard = null;
         }
         else 
-        {
+        {   
+            PlaySound(failClip, 0.1f);
             yield return new WaitForSeconds(0.5f); // moze da bude posebna promenjiva, pa ne mora da se pravi svaki put novi obj
             _firstRevealedCard.Unreveal();
             _secondRevealedCard.Unreveal();
             _firstRevealedCard = null;
             _secondRevealedCard = null;
+
         }
         _moves++;
         movesLabel.text = "Moves: " + _moves;
 
+        yield return new WaitForSeconds(1f);
         _finished = CheckIfFinished();
     }
 
@@ -160,7 +184,7 @@ public class SceneController : MonoBehaviour
                 return false;
             }
         }
-
+        PlaySound(finishedClip);
         return true;
     }
 
@@ -174,21 +198,34 @@ public class SceneController : MonoBehaviour
         Application.Quit();
     }
 
-    public AudioClip exitClip;
-
-    private float PlayExitSound() 
+    private float PlaySound(AudioClip clip, float volume = 0.3f) 
     {
         AudioSource audioSource = GetComponent<AudioSource>();
-        audioSource.clip = exitClip;
-        audioSource.Play();
-        return exitClip.length;
+        audioSource.clip = clip;
+        audioSource.PlayOneShot(clip, volume);
+        return clip.length;
     }
 
-    private IEnumerator WaitSoundAndExit() 
+    private IEnumerator WaitSoundAndExitCoroutine() 
     {
-        float soundLength = PlayExitSound();
+        float soundLength = PlaySound(exitClip);
         yield return new WaitForSeconds(soundLength);
         // do your action here
         Exit();
+    }
+
+    private IEnumerator WaitSoundAndRestartCoroutine()
+    {
+        float soundLength = PlaySound(resetClip);
+        yield return new WaitForSeconds(soundLength);
+        // do your action here
+        Restart();
+    }
+
+    private IEnumerator WaitAndPlayWelcomeSoundCoroutine() 
+    {
+        yield return new WaitForSeconds(0.5f);
+        float soundLength = PlaySound(welcomeClip);
+        hasPlayedWelcomeSound = true;
     }
 }
