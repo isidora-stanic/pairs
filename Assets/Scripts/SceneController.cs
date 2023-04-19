@@ -173,4 +173,22 @@ public class SceneController : MonoBehaviour
     {
         Application.Quit();
     }
+
+    public AudioClip exitClip;
+
+    private float PlayExitSound() 
+    {
+        AudioSource audioSource = GetComponent<AudioSource>();
+        audioSource.clip = exitClip;
+        audioSource.Play();
+        return exitClip.length;
+    }
+
+    private IEnumerator WaitSoundAndExit() 
+    {
+        float soundLength = PlayExitSound();
+        yield return new WaitForSeconds(soundLength);
+        // do your action here
+        Exit();
+    }
 }

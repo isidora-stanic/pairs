@@ -9,8 +9,8 @@ public class UIButton : MonoBehaviour
     [SerializeField] private string targetMessage;
 
     [SerializeField] private Color highlightColor = Color.red;
-    [SerializeField] private Vector3 hoverSize = new Vector3(1f, 1f, 0.5f);
-    [SerializeField] private Vector3 noHoverSize = new Vector3(3f, 3f, 0.5f);
+    // [SerializeField] private Vector3 hoverSize = new Vector3(1f, 1f, 0.5f);
+    // [SerializeField] private Vector3 noHoverSize = new Vector3(3f, 3f, 0.5f);
 
     private SpriteRenderer _sprite;
 
@@ -37,12 +37,12 @@ public class UIButton : MonoBehaviour
 
     private void OnMouseDown()
     {
-        transform.localScale = hoverSize;
+        // transform.localScale = hoverSize;
     }
 
     private void OnMouseUp()
     {
-        transform.localScale = noHoverSize;
+        // transform.localScale = noHoverSize;
 
         if (targetObject != null)
             targetObject.SendMessage(targetMessage);
